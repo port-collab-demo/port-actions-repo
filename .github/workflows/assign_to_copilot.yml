@@ -1,0 +1,38 @@
+name: Assign To Copilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Target repo (e.g., org/repo)'
+        required: true
+      title:
+        description: 'Issue title'
+        required: true
+      body:
+        description: 'Issue body content'
+        required: true
+      labels:
+        description: 'Comma-separated labels (optional)'
+        required: false
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.USER_TOKEN_GH }}
+          script: |
+            const [owner, repo] = "${{ inputs.repo }}".split('/');
+            const labels = "${{ inputs.labels }}".split(',').map(l => l.trim()).filter(Boolean);
+            
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: `${{ inputs.title }}`,
+              body: `${{ inputs.body }}`,
+              assignees: ['github-copilot'],
+              labels: labels
+            });
